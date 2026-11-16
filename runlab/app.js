@@ -24,8 +24,12 @@ function fallbackType(t){return String(t||"Easy").toLowerCase()}
 function isRest(t){return /rest|rehat/i.test(String(t||""))}
 function safeTarget(type){var t=fallbackType(type);if(t.includes("rest")||t.includes("rehat"))return "Rehat / bermain santai";if(t.includes("long"))return "Easy ikut keselesaan; boleh jalan";if(t.includes("interval"))return "Teknik & ulangan terkawal, tanpa sasaran pace";if(t.includes("tempo"))return "Usaha sederhana; berhenti jika terlalu letih";if(t.includes("race")||t.includes("pb"))return "Ujian pilihan sahaja; tanpa sasaran masa";return "Lari santai & boleh berbual";}
 function templateIndex(s,w){var x=stageWeeks(s);return w===x-1?7:Math.min(w,6)}
-function dayPlan(s,w,d){var ti=templateIndex(s,w)*7+d, p=plan[ti]||plan[d]||{a:{type:"Easy",target:"Ikut kemampuan"},h:{type:"Easy",target:"Santai"}};var date=addDay(stageStart(s),w*7+d);var a={type:p.a.type,target:p.a.target};var ah={type:p.h.type||a.type,target:safeTarget(p.h.type||a.type)};
-if(s>0){ah.type=a.type;ah.target=safeTarget(a.type);if(!isRest(a.type)&&!/race|pb/i.test(a.type)){a.target=a.target+" · Sesuaikan ikut tahap semasa";}}
+function dayPlan(s,w,d){var wi=templateIndex(s,w),weekRows=plan.slice(wi*7,wi*7+7);var date=addDay(stageStart(s),w*7+d),taper=w===stageWeeks(s)-1;
+var types=taper?["Easy","Easy","Rest","Rest","Rest","Rest","PB Test"]:["Easy","Tempo","Rest","Interval","Rest","Long Run","Rest"];var kind=types[d];
+var src=weekRows.find(function(x){var t=String(x.a.type||"").toLowerCase(),k=kind.toLowerCase();return k==="pb test"?t.includes("pb"):k==="long run"?t.includes("long"):t===k})||weekRows[d]||{a:{target:"Ikut kemampuan"}};
+var target=isRest(kind)?"Rehat penuh":src.a.target||"Ikut kemampuan";if(taper&&kind==="Easy")target=d===0?"Lari easy pendek 15–20 min":"Easy 15 min (taper sebelum ujian)";
+if(s>0&&!isRest(kind)&&kind!=="PB Test")target+=" · Sesuaikan ikut kemampuan semasa";
+var a={type:kind,target:target},ah={type:kind,target:safeTarget(kind)};
 return {date:date,a:a,h:ah,s:s,w:w,d:d}}
 function dateDone(who,date){return state.done[who+"|"+date]==="done"}
 function status(who,date){return state.done[who+"|"+date]||""}
